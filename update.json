@@ -1,6 +1,6 @@
 {
-  "version": "V252",
+  "version": "V253",
   "launcher_url": "https://api.github.com/repos/call9611135000/magicalgo/contents/MAGIC_ALGO.pyw?ref=main",
-  "sha256": "b95a337bb45162a54b917c95a50d4392795cde6a76741a3951d0ff0e241ab092",
+  "sha256": "91242275795c63d43a1e6d38574b784df429db882aac172ff7359c81621a52d9",
   "channel": "stable"
 }

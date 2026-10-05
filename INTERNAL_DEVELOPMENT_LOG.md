@@ -80,3 +80,13 @@ Each new entry should record:
 - One-click ADD / REMOVE / BUILD / UPDATE operations are architectural targets.
 - The main launcher/core is an orchestrator/project builder, not the owner of module-specific behavior.
 - New pages consume controller interfaces; adding pages must not require modifying stable controllers.
+
+
+### V259 — CONTROLLER FOUNDATION / TEST
+- Base: V258.
+- Commit: f9c551094e1e1fe6e67d597d7c8cd97890bac88d.
+- Added explicit reusable controller registry for Timestamp, REC, Bar Replay, Scanner, Broker, Datafeed and Execution.
+- Dependencies are declared rather than inferred from page names: Timestamp -> Bar Replay; Scanner -> Bar Replay; Execution -> Broker.
+- This is the controller foundation only; feature behavior remains referenced from the existing implementation while controllers are separated incrementally.
+- No page-specific controller copies added.
+- Status: TEST until screenshot/runtime validation.

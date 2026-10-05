@@ -22,7 +22,7 @@ def _github_launcher_version(data):
     try:
         head=data[:8192].decode('utf-8-sig',errors='ignore')
         import re
-        m=re.search(r'^VERSION\\s*=\\s*["\\\'](V\\d+)["\\\']',head,re.M|re.I)
+        m=re.search(r'^VERSION\\s*=\\s*["\x27](V\\d+)["\x27]',head,re.M|re.I)
         return m.group(1).upper() if m else ''
     except Exception: return ''
 

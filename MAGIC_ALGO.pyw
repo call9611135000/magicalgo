@@ -240,7 +240,7 @@ function timestampController261(){
  const i=(replay177&&replay177.mode==='REPLAY')?Math.max(0,Math.min(replay177.index,tl.length-1)):Math.max(0,tl.length-1);
  const q=tl[i]; if(!q)return;
  let el=document.getElementById('timestampController261');
- if(!el){el=document.createElement('span');el.id='timestampController261';el.title='Active candle timestamp';const live=document.getElementById('replayMode177');if(live&&live.parentNode)live.parentNode.insertBefore(el,live.nextSibling)}
+ if(!el){const live=document.getElementById('replayMode177');if(!live||!live.parentNode)return;el=document.createElement('button');el.id='timestampController261';el.type='button';el.disabled=true;el.title='Active candle timestamp';el.style.cssText='min-width:126px;white-space:nowrap;opacity:1';live.insertAdjacentElement('afterend',el)}
  if(!el)return;
  const z=istParts(q.start);
  el.textContent=`${String(z.d).padStart(2,'0')}-${String(z.m).padStart(2,'0')}-${z.y} ${String(z.h).padStart(2,'0')}:${String(z.min).padStart(2,'0')}`;
@@ -261,7 +261,7 @@ function timestampController261(){
 
 # V260 controller registry: feature ownership is explicit and reusable.
 CONTROLLERS = {
-    "timestamp": {"id":"timestamp","version":"3","depends":["bar_replay","datafeed"]},
+    "timestamp": {"id":"timestamp","version":"4","depends":["bar_replay","datafeed"]},
     "rec": {"id":"rec","version":"1","depends":[]},
     "bar_replay": {"id":"bar_replay","version":"1","depends":[]},
     "scanner": {"id":"scanner","version":"1","depends":["bar_replay"]},

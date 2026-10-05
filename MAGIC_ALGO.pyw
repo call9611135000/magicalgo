@@ -85,14 +85,18 @@ def check_github_update():
             encoding='utf-8')
         subprocess.Popen([sys.executable,str(helper),str(os.getpid()),str(target),str(staged),sys.executable,str(update_log)],
                          creationflags=0x08000000 if os.name=='nt' else 0)
-        # V287: hard terminate this exact launcher process after the helper
-        # is started.  This avoids Python cleanup/runpy/Tk shutdown paths from
-        # keeping the old launcher alive and blocking os.replace().
-        try:
-            if os.name=='nt':
-                ctypes.windll.kernel32.TerminateProcess(ctypes.windll.kernel32.GetCurrentProcess(), 0)
-        except Exception:
-            pass
+        # Frozen V287 updater handoff: helper is already external.
+        # Force-close ONLY this launcher process so the helper can replace the
+        # launcher file and immediately reopen the staged GitHub build.
+        if os.name=='nt':
+            try:
+                ctypes.windll.kernel32.TerminateProcess(
+                    ctypes.windll.kernel32.GetCurrentProcess(), 0)
+            except Exception:
+                os._exit(0)
+        else:
+            os._exit(0)
+        # Never return into the running GUI after an update handoff.
         os._exit(0)
     except Exception as exc:
         try:

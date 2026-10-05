@@ -102,3 +102,13 @@ Each new entry should record:
 - Hardcode Controller is independently inspectable and is intended to support later replacement of fixed values with references.
 - Multi-dimensional control remains the target: Controller -> Module -> View -> Environment -> State -> Lifecycle -> Build.
 - Status: TEST until runtime/screenshot validation.
+
+### V261 — GITHUB VERSION CONTROLLER / PROTECTED
+- Base: V260.
+- Commit: 999476cb77027c8fb63289e5393dec755b40106e.
+- Added GitHub Version Controller to the controller registry.
+- MAGIC_ALGO.pyw on GitHub main is the single authoritative project-version source.
+- Removed update.json and its duplicate version/SHA authority.
+- Updater fetches the GitHub launcher directly, reads its VERSION declaration, compares against the local launcher, then stages/replaces/relaunches when newer.
+- No separate JSON version synchronization is required.
+- Status: TEST until V257 -> V261 runtime update is validated.

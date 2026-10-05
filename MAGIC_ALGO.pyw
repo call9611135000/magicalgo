@@ -212,7 +212,7 @@ def apply_v260_native_replay(root):
     js=js.replace(old2,new2,1)
     js=js.replace('title="Start at first bar in selected range">START</button>','title="Enter replay at latest bar in selected range">REPLAY</button>',1)
     js=js.replace('type="range" min="0" max="1" value="0"','type="range" min="0" max="1" value="1"',1)
-    old3="function initReplay177(){\n const top=document.querySelector('.topbar');\n if(top&&!document.getElementById('timestampController261')){const el=document.createElement('button');el.id='timestampController261';el.type='button';el.disabled=true;el.title='Active candle timestamp';el.textContent='--:-- -- -- -- ----';const live=document.getElementById('replayMode177');if(live&&live.parentNode)live.insertAdjacentElement('afterend',el);else top.appendChild(el)}"
+    old3="function initReplay177(){\n const top=document.querySelector('.topbar');"
     new3="function initReplay177(){\n if(!document.getElementById('replayBlink260Style')){const st=document.createElement('style');st.id='replayBlink260Style';st.textContent='@keyframes replayBlink260{50%{opacity:.38}} .replayBlink260{animation:replayBlink260 1s step-end infinite}';document.head.appendChild(st)}\n const top=document.querySelector('.topbar');"
     if old3 not in js: raise RuntimeError('V260 initReplay177 anchor missing')
     js=js.replace(old3,new3,1)
@@ -227,96 +227,16 @@ def apply_v260_native_replay(root):
     js=js.replace(old5,new5,1)
     ap.write_text(js,encoding='utf-8')
 
-def apply_toolbar_tools_controller(root):
-    """Toolbar Tools Controller: reusable chart-tool controls in the permanent top toolbar."""
-    ap=root/'app.js'
-    if not ap.exists(): return
-    js=ap.read_text(encoding='utf-8')
-    marker="toolbarToolsController261"
-    if marker in js: return
-    hook=r"""
-function toolbarToolsController261(){
- const top=document.querySelector('.topbar');if(!top)return;
- let box=document.getElementById('toolbarTools261');
- if(box)return;
- box=document.createElement('span');box.id='toolbarTools261';box.style.cssText='display:inline-flex;align-items:center;gap:4px;margin-left:4px';
- const tools=[['crosshair','＋','Crosshair'],['hline','━','Horizontal line'],['vline','┃','Vertical line'],['trend','╱','Trend line'],['grid','▦','Grid']];
- tools.forEach(([id,txt,title])=>{const b=document.createElement('button');b.type='button';b.id='tool261_'+id;b.textContent=txt;b.title=title;b.dataset.tool=id;b.onclick=()=>{b.classList.toggle('active');window.__toolbarTool261=b.classList.contains('active')?id:null};box.appendChild(b)});
- const rec=document.getElementById('recBtn')||document.getElementById('recButton');
- if(rec&&rec.parentNode)rec.insertAdjacentElement('afterend',box);else top.appendChild(box);
-}
-"""
-    pos=js.find('function initReplay177(){')
-    if pos<0: raise RuntimeError('toolbar tools init anchor missing')
-    js=js[:pos]+hook+js[pos:]
-    js=js.replace("initReplay177();navSecondRow261();timestampController261();","initReplay177();navSecondRow261();timestampController261();toolbarToolsController261();",1)
-    ap.write_text(js,encoding='utf-8')
-
-def apply_nav_second_row(root):
-    """Move view tabs to a dedicated second toolbar row, leaving replay row space for clock."""
-    ap=root/'app.js'
-    if not ap.exists(): return
-    js=ap.read_text(encoding='utf-8')
-    marker="navSecondRow261"
-    if marker in js: return
-    hook=r"""
-function navSecondRow261(){
- const ids=['scannerBtn','orderFlowBtn','chartBtn','footprintBtn','volumeProfileBtn','tpoBtn','profileBtn','watchlistBtn'];
- const found=ids.map(id=>document.getElementById(id)).filter(Boolean);
- if(!found.length)return;
- const first=found[0],parent=first.parentNode;if(!parent)return;
- let row=document.getElementById('navSecondRow261');
- if(!row){row=document.createElement('div');row.id='navSecondRow261';row.style.cssText='display:flex;align-items:center;gap:6px;width:100%;flex-basis:100%;order:99;padding-top:4px';parent.appendChild(row)}
- found.forEach(x=>row.appendChild(x));
-}
-"""
-    pos=js.find('function initReplay177(){')
-    if pos<0: raise RuntimeError('navigation row init anchor missing')
-    js=js[:pos]+hook+js[pos:]
-    js=js.replace("initReplay177();timestampController261();","initReplay177();navSecondRow261();timestampController261();",1)
-    ap.write_text(js,encoding='utf-8')
-
-def apply_timestamp_controller(root):
-    """Reusable Timestamp Controller: one active-candle timestamp shared by every view."""
-    ap=root/'app.js'
-    if not ap.exists(): return
-    js=ap.read_text(encoding='utf-8')
-    marker="function timestampController261(){"
-    if marker in js: return
-    hook=r"""
-function timestampController261(){
- const tl=(replay177&&replay177.timeline&&replay177.timeline.length)?replay177.timeline:replayTimeline177();
- const i=(replay177&&replay177.mode==='REPLAY')?Math.max(0,Math.min(replay177.index,tl.length-1)):Math.max(0,tl.length-1);
- let el=document.getElementById('timestampController261');
- if(!el){const live=document.getElementById('replayMode177');if(!live||!live.parentNode)return;el=document.createElement('button');el.id='timestampController261';el.type='button';el.disabled=true;el.title='Active candle timestamp';el.style.cssText='min-width:150px;white-space:nowrap;opacity:1;font-variant-numeric:tabular-nums';el.textContent='--:-- -- -- -- ----';live.insertAdjacentElement('afterend',el)}
- const q=tl[i]; if(!q)return;
- const z=istParts(q.start);
- const h12=(z.h%12)||12,ap=z.h>=12?'PM':'AM';el.textContent=`${String(h12).padStart(2,'0')}:${String(z.min).padStart(2,'0')} ${ap} ${String(z.d).padStart(2,'0')}-${String(z.m).padStart(2,'0')}-${z.y}`;
-}
-"""
-    pos=js.find('function initReplay177(){')
-    if pos<0: raise RuntimeError('Timestamp Controller init anchor missing')
-    js=js[:pos]+hook+js[pos:]
-    # Consume the same replay/live state; no page-specific clock and no fixed time.
-    js=js.replace("replayBounds208();setView(view);if(typeof renderSideProfile==='function')renderSideProfile()}",
-                  "replayBounds208();timestampController261();setView(view);if(typeof renderSideProfile==='function')renderSideProfile()}",1)
-    js=js.replace("if(typeof replayScanner206==='function')replayScanner206(); setView(view); if(typeof renderSideProfile==='function')renderSideProfile();",
-                  "if(typeof replayScanner206==='function')replayScanner206(); timestampController261(); setView(view); if(typeof renderSideProfile==='function')renderSideProfile();",1)
-    js=js.replace("if(typeof replayScanner206==='function')replayScanner206();replayBounds208();setView(view);",
-                  "if(typeof replayScanner206==='function')replayScanner206();replayBounds208();timestampController261();setView(view);",1)
-    js=js.replace("initReplay177();","initReplay177();timestampController261();",1)
-    ap.write_text(js,encoding='utf-8')
-
 # V260 controller registry: feature ownership is explicit and reusable.
 CONTROLLERS = {
-    "timestamp": {"id":"timestamp","version":"10","depends":["bar_replay","datafeed"]},
+    "timestamp": {"id":"timestamp","version":"1","depends":["bar_replay"]},
     "rec": {"id":"rec","version":"1","depends":[]},
     "bar_replay": {"id":"bar_replay","version":"1","depends":[]},
     "scanner": {"id":"scanner","version":"1","depends":["bar_replay"]},
     "broker": {"id":"broker","version":"1","depends":[]},
     "datafeed": {"id":"datafeed","version":"1","depends":[]},
     "execution": {"id":"execution","version":"1","depends":["broker"]},
-    "hardcode": {"id":"hardcode","version":"1","depends":[]},\n    "toolbar_tools": {"id":"toolbar_tools","version":"1","depends":[]},
+    "hardcode": {"id":"hardcode","version":"1","depends":[]},
 }
 
 # V260: unavoidable fixed values must be declared here, never scattered through modules.
@@ -336,9 +256,6 @@ def deploy_own_build():
         with zipfile.ZipFile(io.BytesIO(base64.b64decode(PAYLOAD))) as z: z.extractall(tmp)
         apply_angel_status_patch(tmp)
         apply_v260_native_replay(tmp)
-        apply_timestamp_controller(tmp)
-        apply_nav_second_row(tmp)
-        apply_toolbar_tools_controller(tmp)
         try: (tmp/'magic_algo_version.txt').write_text(VERSION+'\n',encoding='utf-8')
         except Exception: pass
         if RUNTIME.exists(): shutil.rmtree(RUNTIME,ignore_errors=True)

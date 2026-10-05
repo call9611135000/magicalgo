@@ -212,7 +212,7 @@ def apply_v260_native_replay(root):
     js=js.replace(old2,new2,1)
     js=js.replace('title="Start at first bar in selected range">START</button>','title="Enter replay at latest bar in selected range">REPLAY</button>',1)
     js=js.replace('type="range" min="0" max="1" value="0"','type="range" min="0" max="1" value="1"',1)
-    old3="function initReplay177(){\n const top=document.querySelector('.topbar');"
+    old3="function initReplay177(){\n const top=document.querySelector('.topbar');\n if(top&&!document.getElementById('timestampController261')){const el=document.createElement('button');el.id='timestampController261';el.type='button';el.disabled=true;el.title='Active candle timestamp';el.textContent='--:-- -- -- -- ----';const live=document.getElementById('replayMode177');if(live&&live.parentNode)live.insertAdjacentElement('afterend',el);else top.appendChild(el)}"
     new3="function initReplay177(){\n if(!document.getElementById('replayBlink260Style')){const st=document.createElement('style');st.id='replayBlink260Style';st.textContent='@keyframes replayBlink260{50%{opacity:.38}} .replayBlink260{animation:replayBlink260 1s step-end infinite}';document.head.appendChild(st)}\n const top=document.querySelector('.topbar');"
     if old3 not in js: raise RuntimeError('V260 initReplay177 anchor missing')
     js=js.replace(old3,new3,1)
@@ -261,7 +261,7 @@ function timestampController261(){
 
 # V260 controller registry: feature ownership is explicit and reusable.
 CONTROLLERS = {
-    "timestamp": {"id":"timestamp","version":"6","depends":["bar_replay","datafeed"]},
+    "timestamp": {"id":"timestamp","version":"7","depends":["bar_replay","datafeed"]},
     "rec": {"id":"rec","version":"1","depends":[]},
     "bar_replay": {"id":"bar_replay","version":"1","depends":[]},
     "scanner": {"id":"scanner","version":"1","depends":["bar_replay"]},

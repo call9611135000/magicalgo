@@ -22,8 +22,8 @@ def _github_launcher_version(data):
     try:
         head=data[:8192].decode('utf-8-sig',errors='ignore')
         import re
-        m=re.search(r"^VERSION\s*=\s*['\\\"](V\d+)['\\\"]",head,re.M|re.I)
-        return m.group(1).upper() if m else ''
+        m=re.search(r'^VERSION\\s*=\\s*"(?P<v>V[0-9]+)"',head,re.M|re.I)
+        return m.group('v').upper() if m else ''
     except Exception: return ''
 
 def check_github_update():

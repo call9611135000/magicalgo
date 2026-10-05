@@ -112,3 +112,13 @@ Each new entry should record:
 - Updater fetches the GitHub launcher directly, reads its VERSION declaration, compares against the local launcher, then stages/replaces/relaunches when newer.
 - No separate JSON version synchronization is required.
 - Status: TEST until V257 -> V261 runtime update is validated.
+
+
+## V282 — SELF-UPDATE RECOVERY
+- Restored the updater around the proven V216 handoff pattern without restoring update.json.
+- GitHub MAGIC_ALGO.pyw remains the sole launcher/version authority.
+- Update target now resolves from the running launcher's __file__ path instead of sys.argv[0], preventing replacement of the wrong Python/association path.
+- External Windows helper owns wait -> replace -> relaunch after the launcher exits.
+- Added MAGIC_ALGO_UPDATE.log helper diagnostics for replacement success/failure.
+- Working Market Profile, FYERS, Angel, replay and datafeed payload were not modified by this updater repair.
+- V280 -> V281 automatic replacement failure remains the last failed validation. V282 requires runtime validation before updater is marked proven.

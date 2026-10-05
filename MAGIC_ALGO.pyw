@@ -227,9 +227,41 @@ def apply_v260_native_replay(root):
     js=js.replace(old5,new5,1)
     ap.write_text(js,encoding='utf-8')
 
+def apply_timestamp_controller(root):
+    """Reusable Timestamp Controller: one active-candle timestamp shared by every view."""
+    ap=root/'app.js'
+    if not ap.exists(): return
+    js=ap.read_text(encoding='utf-8')
+    marker="function timestampController261(){"
+    if marker in js: return
+    hook=r"""
+function timestampController261(){
+ const tl=(replay177&&replay177.timeline&&replay177.timeline.length)?replay177.timeline:replayTimeline177();
+ const i=(replay177&&replay177.mode==='REPLAY')?Math.max(0,Math.min(replay177.index,tl.length-1)):Math.max(0,tl.length-1);
+ const q=tl[i]; if(!q)return;
+ let el=document.getElementById('timestampController261');
+ if(!el){el=document.createElement('span');el.id='timestampController261';el.title='Active candle timestamp';const top=document.querySelector('.topbar');if(top)top.appendChild(el)}
+ if(!el)return;
+ const z=istParts(q.start);
+ el.textContent=`${String(z.d).padStart(2,'0')}-${String(z.m).padStart(2,'0')}-${z.y} ${String(z.h).padStart(2,'0')}:${String(z.min).padStart(2,'0')}`;
+}
+"""
+    pos=js.find('function initReplay177(){')
+    if pos<0: raise RuntimeError('Timestamp Controller init anchor missing')
+    js=js[:pos]+hook+js[pos:]
+    # Consume the same replay/live state; no page-specific clock and no fixed time.
+    js=js.replace("replayBounds208();setView(view);if(typeof renderSideProfile==='function')renderSideProfile()}",
+                  "replayBounds208();timestampController261();setView(view);if(typeof renderSideProfile==='function')renderSideProfile()}",1)
+    js=js.replace("if(typeof replayScanner206==='function')replayScanner206(); setView(view); if(typeof renderSideProfile==='function')renderSideProfile();",
+                  "if(typeof replayScanner206==='function')replayScanner206(); timestampController261(); setView(view); if(typeof renderSideProfile==='function')renderSideProfile();",1)
+    js=js.replace("if(typeof replayScanner206==='function')replayScanner206();replayBounds208();setView(view);",
+                  "if(typeof replayScanner206==='function')replayScanner206();replayBounds208();timestampController261();setView(view);",1)
+    js=js.replace("initReplay177();","initReplay177();timestampController261();",1)
+    ap.write_text(js,encoding='utf-8')
+
 # V260 controller registry: feature ownership is explicit and reusable.
 CONTROLLERS = {
-    "timestamp": {"id":"timestamp","version":"1","depends":["bar_replay"]},
+    "timestamp": {"id":"timestamp","version":"2","depends":["bar_replay","datafeed"]},
     "rec": {"id":"rec","version":"1","depends":[]},
     "bar_replay": {"id":"bar_replay","version":"1","depends":[]},
     "scanner": {"id":"scanner","version":"1","depends":["bar_replay"]},
@@ -256,6 +288,7 @@ def deploy_own_build():
         with zipfile.ZipFile(io.BytesIO(base64.b64decode(PAYLOAD))) as z: z.extractall(tmp)
         apply_angel_status_patch(tmp)
         apply_v260_native_replay(tmp)
+        apply_timestamp_controller(tmp)
         try: (tmp/'magic_algo_version.txt').write_text(VERSION+'\n',encoding='utf-8')
         except Exception: pass
         if RUNTIME.exists(): shutil.rmtree(RUNTIME,ignore_errors=True)

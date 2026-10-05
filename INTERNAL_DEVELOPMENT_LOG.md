@@ -90,3 +90,15 @@ Each new entry should record:
 - This is the controller foundation only; feature behavior remains referenced from the existing implementation while controllers are separated incrementally.
 - No page-specific controller copies added.
 - Status: TEST until screenshot/runtime validation.
+
+
+### V260 — HARDCODE CONTROLLER / PROTECTED
+- Base: V259.
+- Commit: 9187b3b6315d336f571631a6a628c9af08ff7f30.
+- Added Hardcode Controller to the reusable controller registry.
+- Added one centralized HARDCODE_REGISTRY; it is intentionally empty at introduction.
+- Protected rule: if a native/shared/reference-driven value exists, hardcoding is prohibited.
+- Any genuinely unavoidable fixed value must be declared centrally with ownership/scope/reason rather than scattered through Python, JavaScript, AFL, adapters or individual modules.
+- Hardcode Controller is independently inspectable and is intended to support later replacement of fixed values with references.
+- Multi-dimensional control remains the target: Controller -> Module -> View -> Environment -> State -> Lifecycle -> Build.
+- Status: TEST until runtime/screenshot validation.

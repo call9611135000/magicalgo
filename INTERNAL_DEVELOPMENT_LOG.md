@@ -65,3 +65,18 @@ Each new entry should record:
 6. Screenshot/video test status.
 7. Known issues.
 8. Status: TEST, STABLE, PROTECTED, ROLLBACK, or REJECTED.
+
+
+## Modular controller architecture — PROTECTED
+- Each feature is an independently controlled module with a stable identity and explicit controller.
+- Initial controllers include REC, Bar Replay, Timestamp, Scanner, Datafeed, and Broker/Execution; future controllers follow the same contract.
+- A controller owns only its module state, UI exposure, config, status/errors, lifecycle, runtime/process ownership, cache/log/data paths, and declared dependencies.
+- Controllers communicate through stable shared references/events; they must not depend on page names or duplicate another module's state.
+- Shared application state stays minimal. Example: Bar Replay publishes active mode/index/candle/cutoff; Timestamp and Scanner consume those references.
+- Every module must be independently installable, enabled/disabled, testable, debuggable, updateable, repairable, removable, reusable and packageable.
+- Removing a module must remove/disable only resources it owns and leave unrelated modules untouched.
+- No dangling hard-coded references are permitted after module removal.
+- Project assembly is registry/dependency driven: e.g. FYERS only, Scanner only, FYERS + Scanner + Replay, or any future valid combination.
+- One-click ADD / REMOVE / BUILD / UPDATE operations are architectural targets.
+- The main launcher/core is an orchestrator/project builder, not the owner of module-specific behavior.
+- New pages consume controller interfaces; adding pages must not require modifying stable controllers.

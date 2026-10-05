@@ -227,6 +227,30 @@ def apply_v260_native_replay(root):
     js=js.replace(old5,new5,1)
     ap.write_text(js,encoding='utf-8')
 
+def apply_nav_second_row(root):
+    """Move view tabs to a dedicated second toolbar row, leaving replay row space for clock."""
+    ap=root/'app.js'
+    if not ap.exists(): return
+    js=ap.read_text(encoding='utf-8')
+    marker="navSecondRow261"
+    if marker in js: return
+    hook=r"""
+function navSecondRow261(){
+ const ids=['scannerBtn','orderFlowBtn','chartBtn','footprintBtn','volumeProfileBtn','tpoBtn','profileBtn','watchlistBtn'];
+ const found=ids.map(id=>document.getElementById(id)).filter(Boolean);
+ if(!found.length)return;
+ const first=found[0],parent=first.parentNode;if(!parent)return;
+ let row=document.getElementById('navSecondRow261');
+ if(!row){row=document.createElement('div');row.id='navSecondRow261';row.style.cssText='display:flex;align-items:center;gap:6px;width:100%;flex-basis:100%;order:99;padding-top:4px';parent.appendChild(row)}
+ found.forEach(x=>row.appendChild(x));
+}
+"""
+    pos=js.find('function initReplay177(){')
+    if pos<0: raise RuntimeError('navigation row init anchor missing')
+    js=js[:pos]+hook+js[pos:]
+    js=js.replace("initReplay177();timestampController261();","initReplay177();navSecondRow261();timestampController261();",1)
+    ap.write_text(js,encoding='utf-8')
+
 def apply_timestamp_controller(root):
     """Reusable Timestamp Controller: one active-candle timestamp shared by every view."""
     ap=root/'app.js'
@@ -260,7 +284,7 @@ function timestampController261(){
 
 # V260 controller registry: feature ownership is explicit and reusable.
 CONTROLLERS = {
-    "timestamp": {"id":"timestamp","version":"8","depends":["bar_replay","datafeed"]},
+    "timestamp": {"id":"timestamp","version":"9","depends":["bar_replay","datafeed"]},
     "rec": {"id":"rec","version":"1","depends":[]},
     "bar_replay": {"id":"bar_replay","version":"1","depends":[]},
     "scanner": {"id":"scanner","version":"1","depends":["bar_replay"]},
@@ -288,6 +312,7 @@ def deploy_own_build():
         apply_angel_status_patch(tmp)
         apply_v260_native_replay(tmp)
         apply_timestamp_controller(tmp)
+        apply_nav_second_row(tmp)
         try: (tmp/'magic_algo_version.txt').write_text(VERSION+'\n',encoding='utf-8')
         except Exception: pass
         if RUNTIME.exists(): shutil.rmtree(RUNTIME,ignore_errors=True)
